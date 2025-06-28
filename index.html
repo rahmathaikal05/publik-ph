@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+
+  <meta charset="UTF-8" />
+  <title>Pengeluaran Harian</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <link rel="manifest" href="D:\pengeluaranharian\manifest.json">
+
+
+
+ <meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+
+
+
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+  #expense-table tbody tr {
+  transition: all 0.3s ease-in-out;
+}
+
+#show-more-btn {
+  margin-top: 10px;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+#show-more-btn:hover {
+  background-color: #45a049;
+}
+
+/* Tambahan untuk membuat tampilan responsif di perangkat mobile */
+@media (max-width: 600px) {
+  #expense-table th, #expense-table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  #show-more-btn {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  .actions button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+
+  button:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+
+
+  .overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  display: none;
+}
+
+.overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-text {
+  margin-top: 1rem;
+  color: #2563eb;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: #ffffff;
+      color: #000000;
+      line-height: 1.6;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      padding: 0 0.5rem;
+    }
+
+    h3 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #000000;
+      text-align: center;
+      margin: 0;
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    button {
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      border: 1px solid #d1d5db;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 8px rgba(37, 99, 235, 0.3);
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+
+    button[type="submit"] {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #1d4ed8;
+    }
+
+    .export-btn {
+      background-color: #e5e7eb;
+      color: #000000;
+    }
+
+    .export-btn:hover {
+      background-color: #d1d5db;
+    }
+
+    .delete-all-btn {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .delete-all-btn:hover {
+      background-color: #b91c1c;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #ffffff;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      overflow-x: auto;
+    }
+
+    thead tr {
+      background-color: #f9fafb;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    tbody tr:hover {
+      background-color: #f3f4f6;
+    }
+
+    .actions button {
+      background-color: #ef4444;
+      color: white;
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    .actions button:hover {
+      background-color: #b91c1c;
+    }
+
+    .total {
+      text-align: right;
+      font-weight: bold;
+      font-size: 1.25rem;
+      color: #000000;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      border: 6px solid #e5e7eb;
+      border-top: 6px solid #2563eb;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .feedback {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #10b981;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease, transform 0.3s ease;
+      z-index: 10000;
+    }
+
+    .feedback.error {
+      background: #ef4444;
+    }
+
+    .feedback.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-10px);
+      pointer-events: auto;
+    }
+
+    @media (max-width: 640px) {
+      form, .total {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      input, button {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <h2></h2>
+    <h2></h2>
+    <h2></h2>
+    <h2></h2>
+
+    
+    
+    <h3>Catatan Pengeluaran Harian</h3>
+   <!-- Tombol Floating Kembali 
+<a href="https://rahmathaikal05.github.io/studyfin/" class="floating-back-button" aria-label="Kembali">
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="white">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+  </svg>
+</a>
+
+<style>
+.floating-back-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 44px;
+  height: 44px;
+  background-color: rgb(0, 0, 0);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  z-index: 9999;
+  transition: all 0.2s ease;
+}
+
+.floating-back-button:hover {
+  background-color: #ff0000;
+  transform: scale(1.1);
+}
+</style>
+
+
+-->
+
+
+    <form id="expense-form" aria-label="Form tambah pengeluaran harian">
+      <input type="text" id="description" placeholder="Deskripsi" required aria-required="true" aria-label="Deskripsi pengeluaran" />
+      <input type="number" id="amount" placeholder="Jumlah (Rp)" required aria-required="true" aria-label="Jumlah pengeluaran dalam ribuan rupiah" min="0" step="any" />
+      <button type="submit">Tambah</button>
+      <button type="button" class="export-btn" onclick="exportCSV()">Ekspor CSV/Excel</button>
+      <button type="button" class="delete-all-btn" onclick="deleteAllExpenses()">Hapus Semua</button>
+
+      <!-- 
+      <button type="button" class="export-btn" onclick="backupToGoogleSheet()">Backup ke Google Sheet</button>
+-->
+    </form>
+
+    
+
+    <table id="expense-table" role="table" aria-label="Daftar pengeluaran harian">
+      <thead>
+
+        <tr>
+          <th scope="col">Tanggal</th>
+          <th scope="col">Deskripsi</th>
+          <th scope="col">Jumlah (Rp)</th>
+          <th scope="col">Aksi</th>
+        </tr> 
+      </thead>
+
+
+      <tbody></tbody>
+    </table>
+            <button id="show-more-btn" style="display: none;" onclick="toggleShowAll()">Tampilkan Semua</button>
+
+
+    <div class="total" id="total-expense">Total Pengeluaran: Rp 0</div>
+  </div>
+
+ <!-- <div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div>Memproses...</div>
+</div>  -->
+
+<div class="overlay" id="overlay">
+  <div class="overlay-content">
+    <div class="spinner"></div>
+    <div class="loading-text">Memproses</div>
+  </div>
+</div>
+
+
+
+  <div class="feedback" id="feedback-msg"></div>
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('expense-form');
+    const tableBody = document.querySelector('#expense-table tbody');
+    const totalExpenseDiv = document.getElementById('total-expense');
+    const overlay = document.getElementById('overlay');
+    const feedback = document.getElementById('feedback-msg');
+    const showMoreBtn = document.getElementById('show-more-btn');
+
+    let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+    let isShowingAll = false;
+
+    const TELEGRAM_TOKEN = '7862572046:AAFWzO4I2ykCAw6k9MfAnJZUTkBbTnim3SM';
+    const TELEGRAM_CHAT_ID = '1815450054';
+
+    const showOverlay = () => overlay.style.display = 'flex';
+    const hideOverlay = () => overlay.style.display = 'none';
+
+    const showFeedback = (msg, isError = false) => {
+      feedback.textContent = msg;
+      feedback.className = 'feedback show' + (isError ? ' error' : '');
+      setTimeout(() => feedback.classList.remove('show'), 3000);
+    };
+
+    const saveExpenses = () => localStorage.setItem('expenses', JSON.stringify(expenses));
+
+    const renderTable = () => {
+      tableBody.innerHTML = '';
+      const visible = isShowingAll ? expenses : expenses.slice(0, 5);
+
+      visible.forEach((item, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.date}</td>
+          <td>${item.description}</td>
+          <td>Rp ${item.amount.toLocaleString('id-ID')}</td>
+          <td class="actions"><button class="delete-btn" data-index="${expenses.indexOf(item)}">Hapus</button></td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      showMoreBtn.style.display = expenses.length > 5 ? 'block' : 'none';
+      showMoreBtn.textContent = isShowingAll ? 'Sembunyikan Sebagian' : 'Tampilkan Semua';
+    };
+
+    const updateTotalExpense = () => {
+      const total = expenses.reduce((sum, item) => sum + item.amount, 0);
+      totalExpenseDiv.textContent = `Total Pengeluaran: Rp ${total.toLocaleString('id-ID')}`;
+    };
+
+
+
+
+
+const sendTelegramPDF = async (data) => {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const bulanHari = {
+    0: 'Minggu',
+    1: 'Senin',
+    2: 'Selasa',
+    3: 'Rabu',
+    4: 'Kamis',
+    5: 'Jumat',
+    6: 'Sabtu'
+  };
+
+  const now = new Date();
+  const dayName = bulanHari[now.getDay()];
+  const formattedDate = now.toLocaleDateString('id-ID', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+  const exportLabel = `${dayName}, ${formattedDate}`;
+
+  doc.setFillColor(33, 150, 243); // Profesional biru
+  doc.rect(0, 0, 210, 30, 'F');
+
+  try {
+    const logoBase64 = ""; // Optional logo
+    if (logoBase64) doc.addImage(logoBase64, 'PNG', 10, 5, 20, 20);
+  } catch (e) {
+    console.warn("Logo tidak dimuat:", e.message);
+  }
+
+  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.setFont("helvetica", "bold");
+  doc.text("Pengeluaran Harian", 105, 15, { align: 'center' });
+
+  doc.setFontSize(10);
+  doc.text(`Tanggal: ${exportLabel}`, 105, 22, { align: 'center' });
+
+  doc.setDrawColor(255);
+  doc.line(10, 30, 200, 30);
+
+  let startY = 40;
+  const lineHeight = 10;
+  let total = 0;
+
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+
+  doc.text("No", 10, startY);
+  doc.text("Tanggal", 20, startY);
+  doc.text("Deskripsi", 70, startY);
+  doc.text("Jumlah (Rp)", 200, startY, { align: 'right' });
+
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+
+
+  startY += 5;
+  doc.line(10, startY, 200, startY);
+  startY += 5;
+
+  data.forEach((item, index) => {
+    if (startY > 280) {
+      doc.addPage();
+      startY = 20;
+    }
+
+    doc.text(String(index + 1), 10, startY);
+    doc.text(item.date, 20, startY);
+    doc.text(item.description, 70, startY);
+    doc.text(`Rp ${item.amount.toLocaleString('id-ID')}`, 200, startY, { align: 'right' });
+
+    total += item.amount;
+    startY += lineHeight;
+  });
+
+  startY += 5;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text(`Total Pengeluaran: Rp ${total.toLocaleString('id-ID')}`, 200, startY, { align: 'right' });
+
+
+  const pdfBlob = doc.output('blob');
+  const formData = new FormData();
+  formData.append('chat_id', TELEGRAM_CHAT_ID);
+  formData.append('document', pdfBlob, `${exportLabel}.pdf`);
+
+  return fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendDocument`, {
+    method: 'POST',
+    body: formData
+  }).then(res => res.json()).then(result => {
+    if (!result.ok) throw new Error(result.description);
+  });
+};
+
+
+
+
+   
+    const handleDelete = (index) => {
+      expenses.splice(index, 1);
+      saveExpenses();
+      renderTable();
+      updateTotalExpense();
+    };
+
+    const deleteAllExpenses = () => {
+      if (!expenses.length) return showFeedback('Belum ada pengeluaran untuk dihapus.', true);
+      if (confirm('Apakah Anda yakin ingin menghapus semua pengeluaran?')) {
+        expenses = [];
+        saveExpenses();
+        renderTable();
+        updateTotalExpense();
+        showFeedback('Semua pengeluaran dihapus.');
+      }
+    };
+
+    const exportCSV = () => {
+      if (!expenses.length) return showFeedback('Belum ada pengeluaran untuk diekspor.', true);
+
+      let csv = 'Tanggal,Jam,Deskripsi,Jumlah (Rp)\n';
+      expenses.forEach(item => {
+        csv += `${item.date},${item.description},${item.amount}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pengeluaran_saya_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+/*
+    const backupToGoogleSheet = () => {
+      if (!expenses.length) return showFeedback('Belum ada data untuk dibackup.', true);
+
+      showOverlay();
+      fetch('https://script.google.com/macros/s/AKfycbxLrmczoCfcsiFi9GBhFOBAxoo7KhMCcJ05jA7JE307qgEGWPry7Ezu2f2r5RVVeYTT6w/exec', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(expenses)
+      })
+      .then(() => sendTelegramPDF(expenses))
+      .then(() => {
+        hideOverlay();
+        showFeedback('Backup berhasil dan PDF Telegram dikirim!');
+      })
+      .catch(err => {
+        hideOverlay();
+        console.error(err);
+        showFeedback('Gagal backup atau kirim Telegram.', true);
+      });
+    };
+
+*/
+  
+
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      showOverlay();
+
+      const now = new Date();
+      const formattedDateTime = now.toLocaleString('id-ID', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+
+      let description = document.getElementById('description').value.trim();
+      description = description.charAt(0).toUpperCase() + description.slice(1);
+      let amountInput = parseFloat(document.getElementById('amount').value);
+
+      if (isNaN(amountInput) || amountInput < 0) {
+        hideOverlay();
+        return showFeedback('Masukkan jumlah pengeluaran yang valid.', true);
+      }
+
+      const entry = {
+        date: formattedDateTime,
+        description,
+        amount: amountInput * 1000
+      };
+
+      expenses.push(entry);
+      saveExpenses();
+      renderTable();
+      updateTotalExpense();
+      form.reset();
+      form.elements.description.focus();
+      hideOverlay();
+      showFeedback('Pengeluaran berhasil ditambahkan!');
+    });
+
+    document.body.addEventListener('pointerup', (e) => {
+      const target = e.target;
+      if (target.classList.contains('delete-btn')) {
+        const index = parseInt(target.dataset.index, 10);
+        handleDelete(index);
+      }
+      if (target.id === 'show-more-btn') {
+        isShowingAll = !isShowingAll;
+        renderTable();
+      }
+    });
+
+    renderTable();
+    updateTotalExpense();
+
+    window.deleteAllExpenses = deleteAllExpenses;
+    window.exportCSV = exportCSV;
+    window.backupToGoogleSheet = backupToGoogleSheet;
+  });
+</script>
+
+
+
+
+
+</body>
+</html>
