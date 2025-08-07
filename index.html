@@ -6,7 +6,7 @@
   <title>Pengeluaran Harian</title>
   <link rel="icon" type="image/png" href="favicon.png">
 
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="D:\pengeluaranharian\manifest.json">
 
 
 
@@ -321,8 +321,9 @@
   <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="white">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
   </svg>
-</a>
+</a> -->
 
+<!-- CSS -->
 <style>
 .floating-back-button {
   position: fixed;
@@ -347,19 +348,17 @@
 </style>
 
 
--->
+
 
 
     <form id="expense-form" aria-label="Form tambah pengeluaran harian">
       <input type="text" id="description" placeholder="Deskripsi" required aria-required="true" aria-label="Deskripsi pengeluaran" />
       <input type="number" id="amount" placeholder="Jumlah (Rp)" required aria-required="true" aria-label="Jumlah pengeluaran dalam ribuan rupiah" min="0" step="any" />
       <button type="submit">Tambah</button>
-      <button type="button" class="export-btn" onclick="exportCSV()">Ekspor CSV/Excel</button>
+      <button type="button" class="export-btn" onclick="exportCSV()">Ekspor CSV</button>
       <button type="button" class="delete-all-btn" onclick="deleteAllExpenses()">Hapus Semua</button>
-
-      <!-- 
       <button type="button" class="export-btn" onclick="backupToGoogleSheet()">Backup ke Google Sheet</button>
--->
+
     </form>
 
     
@@ -582,7 +581,7 @@ const sendTelegramPDF = async (data) => {
     const exportCSV = () => {
       if (!expenses.length) return showFeedback('Belum ada pengeluaran untuk diekspor.', true);
 
-      let csv = 'Tanggal,Jam,Deskripsi,Jumlah (Rp)\n';
+      let csv = 'Tanggal,Deskripsi,Jumlah (Rp)\n';
       expenses.forEach(item => {
         csv += `${item.date},${item.description},${item.amount}\n`;
       });
@@ -591,12 +590,11 @@ const sendTelegramPDF = async (data) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `pengeluaran_saya_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `backup_${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     };
 
-/*
     const backupToGoogleSheet = () => {
       if (!expenses.length) return showFeedback('Belum ada data untuk dibackup.', true);
 
@@ -618,10 +616,6 @@ const sendTelegramPDF = async (data) => {
         showFeedback('Gagal backup atau kirim Telegram.', true);
       });
     };
-
-*/
-  
-
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
